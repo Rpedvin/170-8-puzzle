@@ -32,11 +32,11 @@ int grabInput(vector<vector<string>> &arr){
         break;
       case 2:
         while(true){
-          cout << "How large would you like the array? Choose a number from 2 - 5: ";
+          cout << "How large would you like the array? Choose a number from 3 - 5: ";
           cin >> n;
           cout << endl;
           // Verify that n is in the range
-          if (!(n > 1 && n < 6)){
+          if (!(n > 2 && n < 6)){
             cout << "Invalid Input" << endl;
             // Force the loop to restart
             continue;
