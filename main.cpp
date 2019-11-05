@@ -27,7 +27,7 @@ int grabInput(vector<vector<string>> &arr){
         arr.at(1).at(0) = '4'; arr.at(1).at(1) = '0'; arr.at(1).at(2) = '6';
         arr.at(2).at(0) = '7'; arr.at(2).at(1) = '5'; arr.at(2).at(2) = '8';
         printPuzzle(arr);
-        cout << "Puzzle loaded." << endl;
+        cout << "Puzzle loaded." << endl << endl;
         return 3;
         break;
       case 2:
@@ -56,6 +56,7 @@ int grabInput(vector<vector<string>> &arr){
             while(true){
               cin >> tmp;
               if ((tmp.compare("y") || tmp.compare("Y")) == 1){
+                cout << endl;
                   return n;
               }
               else if((tmp.compare("n") || tmp.compare("N")) == 0){
@@ -78,17 +79,54 @@ int grabInput(vector<vector<string>> &arr){
 
 int menu(){
   vector<vector<string>> puzzleVector;
+  int choice = 0;
+
   cout << "Welcome to Renee Pedvin's 8-Puzzle solver." << endl;
   int x = grabInput(puzzleVector);
   if (x == -1){
     return -1;
   }
   cout << "What type of algorithm would you like to solve this with?: " << endl;
-  cout << "    1) "
+  cout << "    1) Uniform Cost Search" << endl;
+  cout << "    2) A* with Misplaced Tile Heuristic" << endl;
+  cout << "    3) A* with Manhattan Distance Heuristic" << endl << endl;
+  while(true){
+    cout << "Please input a number 1-3, or 0 to quit: ";
+    cin >> choice;
 
+    switch(choice){
+      case 0:
+        return 0;
+        break;
+      case 1:
+        return 1;
+        break;
+      case 2:
+        return 2;
+        break;
+      case 3:
+        return 3;
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 int main(){
   int y = menu();
+  switch(y){
+    case 0:
+      return 0;
+      break;
+    case 1:
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    default:
+      return -1;
+  }
   return 0;
 }
