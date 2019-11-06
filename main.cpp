@@ -51,21 +51,7 @@ int grabInput(vector<vector<string>> &arr){
               }
             }
             printPuzzle(arr);
-            cout << "Puzzle created. Does this look correct? (Y/N): ";
-            while(true){
-              cin >> tmp;
-              if ((tmp.compare("y") || tmp.compare("Y")) == 1){
-                cout << endl;
-                  return n;
-              }
-              else if((tmp.compare("n") || tmp.compare("N")) == 0){
-                  cout << "Please restart program to fix input." << endl;
-                  return -1;
-              }
-              else{
-                cout << "Please type 'Y' or 'N': ";
-              }
-            }
+            return 1;
           }
         }
         break;
@@ -78,10 +64,34 @@ int grabInput(vector<vector<string>> &arr){
 
 Node menu(){
   vector<vector<string>> puzzleVector;
+  vector<vector<string>> sol;
+  vector<vector<string>> imp;
   int choice = 0;
+  string tmp;
 
   cout << "Welcome to Renee Pedvin's 8-Puzzle solver." << endl;
   int x = grabInput(puzzleVector);
+  int size = puzzleVector.at(0).size();
+
+  // Create the solution and impossible solution vectors
+  sol.resize(puzzleVector.size());
+  imp.resize(puzzleVector.size());
+  for (int i = 0; i < size; i++){
+    sol.at(i).resize(size);
+    imp.at(i).resize(size);
+    for (int j = 0; j < size; j++){
+        sol.at(i).at(j) = to_string(i*size + j + 1);
+        imp.at(i).at(j) = to_string(i*size + j + 1);
+    }
+  }
+  sol.at(size-1).at(size-1) = "0";
+  imp.at(size-1).at(size-1) = "0";
+
+  tmp = imp.at(size-1).at(size-2);
+  imp.at(size-1).at(size-2) = imp.at(size-1).at(size-3);
+  imp.at(size-1).at(size-3) = tmp;
+
+
   if (x == -1){
     // return empty node
     return Node();
@@ -100,13 +110,13 @@ Node menu(){
         return Node();
         break;
       case 1:
-        return aStar(1, puzzleVector);
+        return aStar(1, puzzleVector, sol, imp);
         break;
       case 2:
-        return aStar(2, puzzleVector);
+        return aStar(2, puzzleVector, sol, imp);
         break;
       case 3:
-        return aStar(3, puzzleVector);
+        return aStar(3, puzzleVector, sol, imp);
         break;
       default:
         break;

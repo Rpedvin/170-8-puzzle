@@ -23,18 +23,18 @@ struct Node{
 };
 
 // Algorithm to use
-Node aStar(int, vector<vector<string>>);
+Node aStar(int, vector<vector<string>>, vector<vector<string>>, vector<vector<string>>);
 
 // Heuristic functions, all return h(n)
 int heuristicUniform();
 int heuristicMisplaced(vector<vector<string>>);
-int heuristicManhattan(vector<vector<string>>, int, int);
+int heuristicManhattan(vector<vector<string>>);
 
 // Helper function for displaying overall puzzle
 void printPuzzle(vector<vector<string>> );
 
 // Helper function for checking puzzle's solved state
-int checkPuzzle(vector<vector<string>> );
+int checkPuzzle(vector<vector<string>>, vector<vector<string>>, vector<vector<string>>);
 
 // Node handling helper functions
 // Checks if nodes are the same

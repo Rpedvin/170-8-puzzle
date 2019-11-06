@@ -30,13 +30,13 @@ int checkExpand(Node a, vector<Node> vec){
   // loop through expanded nodes, check if current node exists inside of it
   for (int i = 0; i < vec.size(); i++){
     if (checkNode(a, vec.at(i)) == 0){
+      //printPuzzle(a.n);
+      //printPuzzle(vec.at(i).n);
       return 0;
     }
   }
   return 1;
 }
-
-// Cast things to int. Do the thing!
 
 // Helper function for displaying overall puzzle
 // Doesn't need to be pass by ref, so no potential modification
@@ -54,46 +54,33 @@ void printPuzzle(vector<vector<string>> arr){
 }
 
 // Check Puzzle for solved, insolvable, or unsolved states
-int checkPuzzle(vector<vector<string>> arr){
-  // Iterate over aray
-  int value = 0;
-  int n = 0;
+int checkPuzzle(vector<vector<string>> arr, vector<vector<string>> so, vector<vector<string>> im){
+  // If count == 3, then we're in an impossible state.
+  int count = 0;
   for (int i = 0; i < arr.size(); i++){
-    n = arr.at(i).size();
     for (int j = 0; j < arr.at(i).size(); j++){
-      value = stoi(arr.at(i).at(j));
-      // If the item is equivalent to what it should be
-      if (value == (i*n + j + 1)){
+      // Puzzle is following solution
+      if (arr.at(i).at(j) == so.at(i).at(j)){
+        //cout << "Correct!" << endl;
         continue;
       }
-      // Check to see if we're in an impossible to solve state
-      else if (i == n - 1){
-        if (j == n - 3){
-          if (value == ((n*n) - 1)){
-            value = stoi(arr.at(i).at(j+1));
-            if (value == ((n*n) - 2)){
-              value = stoi(arr.at(i).at(j+2));
-              if (value == 0){
-                return -2;
-              }
-            }
-          }
+      // This should only occur if one of the last three are misplaced
+      else if(arr.at(i).at(j) == im.at(i).at(j)){
+        // Increment count. If we've hit 2, then we're in a bad state. (0 will always return true for the solution)
+        //cout << "Bad state! Incrementing count." << endl;
+        count ++;
+        if (count == 2){
+          return -2;
         }
       }
-      // Reset value just in case
-      value = stoi(arr.at(i).at(j));
-      // Check to see if we're on the last number, and the last number is 0
-      if (i == j == n - 1){
-        if (value == 0){
-          return 0;
-        }
-      }
-      // Otherwise keep going
+      // else we're borked.
       else{
+        //cout << "Puzzle Borked" << endl;
         return -1;
       }
     }
   }
+  // Puzzle success!
   return 0;
 }
 
@@ -134,24 +121,27 @@ int heuristicMisplaced(vector<vector<string>> arr){
 }
 
 // Manhattan Distance heuristic
-int heuristicManhattan(vector<vector<string>> arr, int i, int j){
+int heuristicManhattan(vector<vector<string>> arr){
   int dx = 0;
   int dy = 0;
-  int n = arr.at(i).size();
-  int value = stoi(arr.at(i).at(j));
-  if (value == 0){
-    dx = abs(i - (n - 1));
-    dy = abs(j - (n - 1));
+  int count = 0;
+  int n = arr.at(0).size();
+  //cout << "n: " << n << endl;
+  for (int x = 0; x < n; x++){
+    for (int y = 0; y < n; y++){
+      int value = stoi(arr.at(x).at(y));
+      if (value == 0)
+        continue;
+      dx = abs(x - ((value - 1)/n));
+      dy = abs(y - ((value - 1)%n));
+      count += dx + dy;
+    }
   }
-  else{
-    dx = abs(i - ((value - 1)/n));
-    dy = abs(j - ((value - 1)%n));
-  }
-  return (dx + dy);
+  return count;
 }
 
 // A* algorithm
-Node aStar(int selec, vector<vector<string>> arr){
+Node aStar(int selec, vector<vector<string>> arr, vector<vector<string>> so, vector<vector<string>> im){
   // Grab the size of the nxn vector
   int m = arr.at(0).size();
   // Create the initial state node with no cost
@@ -169,6 +159,9 @@ Node aStar(int selec, vector<vector<string>> arr){
   // String for holding swap value
   string temp;
 
+  // ints for holding max queue size, and max nodes expanded
+  int maxQ = 0, maxN = 0;
+
   // push initial state
   freshNodes.push(n);
 
@@ -176,15 +169,21 @@ Node aStar(int selec, vector<vector<string>> arr){
   while(freshNodes.size() != 0){
     // Pop a node off the queue
     n = freshNodes.top();
+    cout << "Current node:" << endl;
+    printPuzzle(n.n);
     // Push the node onto the expanded nodes vector
     oldNodes.push_back(n);
-    check = checkPuzzle(n.n);
+    check = checkPuzzle(n.n, so, im);
     // If the puzzle solved properly
-    if (check == 0)
+
+    if (check == 0){
+      cout << "Max Queue Size: " << maxQ << endl;
+      cout << "Max Node Depth: " << maxN << endl;
       return n;
+    }
     // If we're in an impossible state;
-    else if(check = -2){
-      cout << "Puzzle cannot be solved!" << endl;
+    else if(check == -2){
+      //cout << "Puzzle cannot be solved!" << endl;
       return n;
     }
     // Otherwise
@@ -204,14 +203,18 @@ Node aStar(int selec, vector<vector<string>> arr){
           break;
         }
       }
+      // Remove current node before adding more
+      freshNodes.pop();
+
       // Search potential expansions
       // Search up
       if (x != 0){
+      // cout << "Can be expanded Up" << endl;
         diff = n;
         // Swap values
         temp = diff.n.at(x).at(y);
         diff.n.at(x).at(y) = diff.n.at(x-1).at(y);
-        diff.n.at(x).at(y) = temp;
+        diff.n.at(x-1).at(y) = temp;
 
         // Check if expanded already
         if (checkExpand(diff, oldNodes) == 1){
@@ -223,7 +226,7 @@ Node aStar(int selec, vector<vector<string>> arr){
             diff.c = heuristicMisplaced(diff.n);
           }
           if (selec == 3){
-            diff.c = heuristicManhattan(diff.n, x-1, y);
+            diff.c = heuristicManhattan(diff.n);
           }
           // push node to queue
           freshNodes.push(diff);
@@ -232,11 +235,12 @@ Node aStar(int selec, vector<vector<string>> arr){
       }
       // Search left
       if (y != 0){
+        //cout << "Can be expanded Left" << endl;
         diff = n;
         // Swap values
         temp = diff.n.at(x).at(y);
         diff.n.at(x).at(y) = diff.n.at(x).at(y-1);
-        diff.n.at(x).at(y) = temp;
+        diff.n.at(x).at(y-1) = temp;
 
         // Check if expanded already
         if (checkExpand(diff, oldNodes) == 1){
@@ -248,7 +252,7 @@ Node aStar(int selec, vector<vector<string>> arr){
             diff.c = heuristicMisplaced(diff.n);
           }
           if (selec == 3){
-            diff.c = heuristicManhattan(diff.n, x, y-1);
+            diff.c = heuristicManhattan(diff.n);
           }
           // push node to queue
           freshNodes.push(diff);
@@ -257,11 +261,12 @@ Node aStar(int selec, vector<vector<string>> arr){
       }
       // Search right
       if (y != (m - 1)){
+        //cout << "Can be expanded Right" << endl;
         diff = n;
         // Swap values
         temp = diff.n.at(x).at(y);
         diff.n.at(x).at(y) = diff.n.at(x).at(y+1);
-        diff.n.at(x).at(y) = temp;
+        diff.n.at(x).at(y+1) = temp;
 
         // Check if expanded already
         if (checkExpand(diff, oldNodes) == 1){
@@ -273,7 +278,7 @@ Node aStar(int selec, vector<vector<string>> arr){
             diff.c = heuristicMisplaced(diff.n);
           }
           if (selec == 3){
-            diff.c = heuristicManhattan(diff.n, x, y+1);
+            diff.c = heuristicManhattan(diff.n);
           }
           // push node to queue
           freshNodes.push(diff);
@@ -282,11 +287,12 @@ Node aStar(int selec, vector<vector<string>> arr){
       }
       // Search down
       if (x != (m - 1)){
+        //cout << "Can be expanded Down" << endl;
         diff = n;
         // Swap values
         temp = diff.n.at(x).at(y);
         diff.n.at(x).at(y) = diff.n.at(x+1).at(y);
-        diff.n.at(x).at(y) = temp;
+        diff.n.at(x+1).at(y) = temp;
 
         // Check if expanded already
         if (checkExpand(diff, oldNodes) == 1){
@@ -298,7 +304,7 @@ Node aStar(int selec, vector<vector<string>> arr){
             diff.c = heuristicMisplaced(diff.n);
           }
           if (selec == 3){
-            diff.c = heuristicManhattan(diff.n, x+1, y);
+            diff.c = heuristicManhattan(diff.n);
           }
           // push node to queue
           freshNodes.push(diff);
@@ -309,9 +315,15 @@ Node aStar(int selec, vector<vector<string>> arr){
     // Reset all necessary variables, reset loop
     x = (-1);
     y = (-1);
-    // Pop top node off of queue
-    freshNodes.pop();
+    // Update queue size variable
+    if (freshNodes.size() >= maxQ){
+      maxQ = freshNodes.size();
+    }
+    // Increment depth
+    maxN++;
   }
   // If all else fails, return empty node
+  cout << "Max Queue Size: " << maxQ << endl;
+  cout << "Max Node Depth: " << maxN << endl;
   return Node();
 }
