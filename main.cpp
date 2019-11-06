@@ -43,7 +43,6 @@ int grabInput(vector<vector<string>> &arr){
           }
           else{
             arr.resize(n);
-            // Get and process input using stringstreams
             for (int i = 0; i < n; i++){
               arr.at(i).resize(n);
               for (int j = 0; j < n; j++){
@@ -77,14 +76,15 @@ int grabInput(vector<vector<string>> &arr){
   }
 }
 
-int menu(){
+Node menu(){
   vector<vector<string>> puzzleVector;
   int choice = 0;
 
   cout << "Welcome to Renee Pedvin's 8-Puzzle solver." << endl;
   int x = grabInput(puzzleVector);
   if (x == -1){
-    return -1;
+    // return empty node
+    return Node();
   }
   cout << "What type of algorithm would you like to solve this with?: " << endl;
   cout << "    1) Uniform Cost Search" << endl;
@@ -96,16 +96,17 @@ int menu(){
 
     switch(choice){
       case 0:
-        return 0;
+        // return empty node
+        return Node();
         break;
       case 1:
-        return 1;
+        return aStar(1, puzzleVector);
         break;
       case 2:
-        return 2;
+        return aStar(2, puzzleVector);
         break;
       case 3:
-        return 3;
+        return aStar(3, puzzleVector);
         break;
       default:
         break;
@@ -114,19 +115,10 @@ int menu(){
 }
 
 int main(){
-  int y = menu();
-  switch(y){
-    case 0:
-      return 0;
-      break;
-    case 1:
-      break;
-    case 2:
-      break;
-    case 3:
-      break;
-    default:
-      return -1;
+  Node y = menu();
+  if (y.n.size() == 0){
+    cout << "Result: " << endl;
+    printPuzzle(y.n);
   }
   return 0;
 }
